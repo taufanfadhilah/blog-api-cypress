@@ -1,11 +1,10 @@
 describe('Auth module', () => {
+  const userData = {
+    name: 'John Doe',
+    email: 'john@nest.test',
+    password: 'Secret_123',
+  }
   describe('Register', () => {
-    const userData = {
-      name: 'John Doe',
-      email: 'john@nest.test',
-      password: 'Secret_123',
-    }
-
     it('should return error messages for validation', () => {
       cy.request({
         method: 'POST',
@@ -82,10 +81,49 @@ describe('Auth module', () => {
         body: userData,
         failOnStatusCode: false,
       }).then((response) => {
-        console.log({ response })
         expect(response.status).to.eq(500)
         expect(response.body.success).to.be.false
         expect(response.body.message).to.eq('Email already exists')
+      })
+    })
+  })
+
+  describe('Login', () => {
+    it('should return unauthorized on failed', () => {
+      cy.request({
+        method: 'POST',
+        url: '/auth/login',
+        failOnStatusCode: false,
+      }).then((response) => {
+        expect(response.status).to.eq(401)
+        expect(response.body.message).to.eq('Unauthorized')
+      })
+
+      cy.request({
+        method: 'POST',
+        url: '/auth/login',
+        body: {
+          email: userData.email,
+          password: 'wrong password',
+        },
+        failOnStatusCode: false,
+      }).then((response) => {
+        expect(response.status).to.eq(401)
+        expect(response.body.message).to.eq('Unauthorized')
+      })
+    })
+
+    it('should return access token on success', () => {
+      cy.request({
+        method: 'POST',
+        url: '/auth/login',
+        body: {
+          email: userData.email,
+          password: userData.password,
+        },
+      }).then((response) => {
+        expect(response.body.success).to.be.true
+        expect(response.body.data.access_token).not.to.be.undefined
       })
     })
   })
