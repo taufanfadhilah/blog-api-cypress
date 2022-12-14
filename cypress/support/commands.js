@@ -27,3 +27,29 @@
 Cypress.Commands.add('resetUsers', () => {
   cy.request('DELETE', '/auth/reset')
 })
+
+Cypress.Commands.add('login', () => {
+  const userData = {
+    name: 'John Doe',
+    email: 'john@nest.test',
+    password: 'Secret_123',
+  }
+  cy.resetUsers()
+
+  cy.request({
+    method: 'POST',
+    url: '/auth/register',
+    body: userData,
+  })
+
+  cy.request({
+    method: 'POST',
+    url: '/auth/login',
+    body: {
+      email: userData.email,
+      password: userData.password,
+    },
+  }).then((response) => {
+    Cypress.env('token', response.body.data.access_token)
+  })
+})

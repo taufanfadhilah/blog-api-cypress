@@ -127,4 +127,38 @@ describe('Auth module', () => {
       })
     })
   })
+
+  describe('me', () => {
+    before('do login', () => {
+      cy.login()
+    })
+
+    it('should return unauthorized when send no token', () => {
+      cy.request({
+        method: 'GET',
+        url: '/auth/me',
+        failOnStatusCode: false,
+      }).then((response) => {
+        expect(response.status).to.eq(401)
+        expect(response.body.message).to.eq('Unauthorized')
+      })
+    })
+
+    it('should return correct current data', () => {
+      cy.request({
+        method: 'GET',
+        url: '/auth/me',
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+        failOnStatusCode: false,
+      }).then((response) => {
+        const { id, name, email } = response.body.data
+        expect(response.status).to.eq(200)
+        expect(id).not.to.be.undefined
+        expect(name).to.eq(userData.name)
+        expect(email).to.eq(userData.email)
+      })
+    })
+  })
 })
