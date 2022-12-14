@@ -56,4 +56,39 @@ describe('Post module', () => {
       })
     })
   })
+
+  describe('Get all posts', () => {
+    before('login', () => {
+      cy.login()
+    })
+
+    it('should return unauthorized', () => {
+      cy.request({
+        method: 'GET',
+        url: '/posts',
+        failOnStatusCode: false,
+      }).then((response) => {
+        cy.unauthorized(response)
+      })
+    })
+
+    it('should return correct count', () => {
+      const count = 5
+      cy.createPosts(count)
+      
+      cy.request({
+        method: 'GET',
+        url: '/posts',
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+        failOnStatusCode: false,
+      }).then((response) => {
+        const { success, data } = response.body
+        expect(response.status).to.eq(200)
+        expect(success).to.true
+        expect(data.length).to.eq(count)
+      })
+    })
+  })
 })

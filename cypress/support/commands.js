@@ -66,3 +66,34 @@ Cypress.Commands.add('badRequest', (response, messages = []) => {
     expect(message).to.be.oneOf(response.body.message)
   })
 })
+
+Cypress.Commands.add('createPosts', (count) => {
+  const postsData = []
+
+  for (let index = 0; index < count; index++) {
+    postsData.push({
+      title: `Title post ${index + 1}`,
+      content: `Content for post ${index + 1}`,
+    })
+  }
+  cy.login()
+
+  cy.request({
+    method: 'DELETE',
+    url: '/posts/reset',
+    headers: {
+      authorization: `Bearer ${Cypress.env('token')}`,
+    },
+  })
+
+  postsData.forEach((post) => {
+    cy.request({
+      method: 'POST',
+      url: '/posts',
+      body: post,
+      headers: {
+        authorization: `Bearer ${Cypress.env('token')}`,
+      },
+    })
+  })
+})
