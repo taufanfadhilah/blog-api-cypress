@@ -53,3 +53,16 @@ Cypress.Commands.add('login', () => {
     Cypress.env('token', response.body.data.access_token)
   })
 })
+
+Cypress.Commands.add('unauthorized', (response) => {
+  expect(response.status).to.eq(401)
+  expect(response.body.message).to.eq('Unauthorized')
+})
+
+Cypress.Commands.add('badRequest', (response, messages = []) => {
+  expect(response.status).to.eq(400)
+  expect(response.body.error).to.eq('Bad Request')
+  messages.forEach((message) => {
+    expect(message).to.be.oneOf(response.body.message)
+  })
+})

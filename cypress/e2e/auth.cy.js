@@ -11,13 +11,18 @@ describe('Auth module', () => {
         url: '/auth/register',
         failOnStatusCode: false,
       }).then((response) => {
-        expect(response.status).to.eq(400)
-        expect(response.body.error).to.eq('Bad Request')
-        expect('name should not be empty').to.be.oneOf(response.body.message)
-        expect('email should not be empty').to.be.oneOf(response.body.message)
-        expect('password should not be empty').to.be.oneOf(
-          response.body.message,
-        )
+        cy.badRequest(response, [
+          'name should not be empty',
+          'email should not be empty',
+          'password should not be empty',
+        ])
+        // expect(response.status).to.eq(400)
+        // expect(response.body.error).to.eq('Bad Request')
+        // expect('name should not be empty').to.be.oneOf(response.body.message)
+        // expect('email should not be empty').to.be.oneOf(response.body.message)
+        // expect('password should not be empty').to.be.oneOf(
+        //   response.body.message,
+        // )
       })
     })
 
@@ -32,9 +37,10 @@ describe('Auth module', () => {
         },
         failOnStatusCode: false,
       }).then((response) => {
-        expect(response.status).to.eq(400)
-        expect(response.body.error).to.eq('Bad Request')
-        expect('email must be an email').to.be.oneOf(response.body.message)
+        cy.badRequest(response, ['email must be an email'])
+        // expect(response.status).to.eq(400)
+        // expect(response.body.error).to.eq('Bad Request')
+        // expect('email must be an email').to.be.oneOf(response.body.message)
       })
     })
 
@@ -49,11 +55,12 @@ describe('Auth module', () => {
         },
         failOnStatusCode: false,
       }).then((response) => {
-        expect(response.status).to.eq(400)
-        expect(response.body.error).to.eq('Bad Request')
-        expect('password is not strong enough').to.be.oneOf(
-          response.body.message,
-        )
+        cy.badRequest(response, ['password is not strong enough'])
+        // expect(response.status).to.eq(400)
+        // expect(response.body.error).to.eq('Bad Request')
+        // expect('password is not strong enough').to.be.oneOf(
+        //   response.body.message,
+        // )
       })
     })
 
@@ -95,8 +102,9 @@ describe('Auth module', () => {
         url: '/auth/login',
         failOnStatusCode: false,
       }).then((response) => {
-        expect(response.status).to.eq(401)
-        expect(response.body.message).to.eq('Unauthorized')
+        cy.unauthorized(response)
+        // expect(response.status).to.eq(401)
+        // expect(response.body.message).to.eq('Unauthorized')
       })
 
       cy.request({
@@ -108,8 +116,9 @@ describe('Auth module', () => {
         },
         failOnStatusCode: false,
       }).then((response) => {
-        expect(response.status).to.eq(401)
-        expect(response.body.message).to.eq('Unauthorized')
+        cy.unauthorized(response)
+        // expect(response.status).to.eq(401)
+        // expect(response.body.message).to.eq('Unauthorized')
       })
     })
 
@@ -139,8 +148,9 @@ describe('Auth module', () => {
         url: '/auth/me',
         failOnStatusCode: false,
       }).then((response) => {
-        expect(response.status).to.eq(401)
-        expect(response.body.message).to.eq('Unauthorized')
+        cy.unauthorized(response)
+        // expect(response.status).to.eq(401)
+        // expect(response.body.message).to.eq('Unauthorized')
       })
     })
 
