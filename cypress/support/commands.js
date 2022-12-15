@@ -67,15 +67,21 @@ Cypress.Commands.add('badRequest', (response, messages = []) => {
   })
 })
 
-Cypress.Commands.add('createPosts', (count) => {
-  const postsData = []
+Cypress.Commands.add('generatePostsData', (count) => {
+  const { faker } = require('@faker-js/faker')
 
-  for (let index = 0; index < count; index++) {
-    postsData.push({
-      title: `Title post ${index + 1}`,
-      content: `Content for post ${index + 1}`,
-    })
-  }
+  cy.writeFile(
+    'cypress/fixtures/posts.json',
+    Cypress._.times(count, () => {
+      return {
+        title: faker.lorem.words(3),
+        content: faker.lorem.paragraph(),
+      }
+    }),
+  )
+})
+
+Cypress.Commands.add('createPosts', (data = []) => {
   cy.login()
 
   cy.request({
@@ -86,7 +92,7 @@ Cypress.Commands.add('createPosts', (count) => {
     },
   })
 
-  postsData.forEach((post) => {
+  data.forEach((post) => {
     cy.request({
       method: 'POST',
       url: '/posts',

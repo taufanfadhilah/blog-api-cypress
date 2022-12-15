@@ -72,10 +72,12 @@ describe('Post module', () => {
       })
     })
 
-    it('should return correct count', () => {
-      const count = 5
-      cy.createPosts(count)
-      
+    it('should return correct count and data', () => {
+      const count = 15
+      cy.generatePostsData(count)
+      cy.fixture('posts').as('getPostData')
+      cy.get('@getPostData').then((postData) => cy.createPosts(postData))
+
       cy.request({
         method: 'GET',
         url: '/posts',
@@ -88,6 +90,14 @@ describe('Post module', () => {
         expect(response.status).to.eq(200)
         expect(success).to.true
         expect(data.length).to.eq(count)
+
+        cy.get('@getPostData').then((postData) => {
+          data.forEach((post, index) => {
+            expect(post.id).to.eq(index + 1)
+            expect(post.title).to.eq(postData[index].title)
+            expect(post.content).to.eq(postData[index].content)
+          })
+        })
       })
     })
   })
