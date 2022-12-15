@@ -3,11 +3,11 @@ describe('Post module', () => {
     randomId = Cypress._.random(16, 50)
   before('generate posts data', () => cy.generatePostsData(dataCount))
 
-  describe('Create post', () => {
-    before('login', () => {
-      cy.login()
-    })
+  before('login', () => {
+    cy.login()
+  })
 
+  describe('Create post', () => {
     it('should return unauthorized', () => {
       cy.checkUnauthorized('POST', '/posts')
     })
@@ -43,6 +43,7 @@ describe('Post module', () => {
             success,
             data: { title, content, comments },
           } = response.body
+
           expect(response.status).to.eq(201)
           expect(success).to.be.true
           expect(title).to.eq(postData[0].title)
@@ -54,10 +55,6 @@ describe('Post module', () => {
   })
 
   describe('Get all posts', () => {
-    before('login', () => {
-      cy.login()
-    })
-
     it('should return unauthorized', () => {
       cy.checkUnauthorized('GET', '/posts')
     })
@@ -215,6 +212,68 @@ describe('Post module', () => {
 
         expect(post.title).to.eq(newPost.title)
         expect(post.content).to.eq(newPost.content)
+      })
+    })
+  })
+
+  describe('Delete post', () => {
+    it('should return unauthorized', () => {
+      cy.checkUnauthorized('DELETE', '/posts/1')
+    })
+
+    it('should return not found', () => {
+      cy.request({
+        method: 'DELETE',
+        url: `/posts/${randomId}`,
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+        failOnStatusCode: false,
+      }).then((response) => {
+        const { success, data } = response.body
+        expect(response.status).to.eq(404)
+        expect(success).to.be.false
+        expect(data).to.be.null
+      })
+    })
+
+    it('should successfully remove the post', () => {
+      cy.request({
+        method: 'DELETE',
+        url: '/posts/1',
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+      }).then((response) => {
+        const { success, message } = response.body
+        expect(response.status).to.be.ok
+        expect(success).to.be.ok
+        expect(message).to.eq('Post deleted successfully')
+      })
+    })
+
+    it('should not found the deleted post', () => {
+      cy.request({
+        method: 'GET',
+        url: '/posts/1',
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+        failOnStatusCode: false,
+      }).then((response) => {
+        expect(response.status).to.eq(404)
+      })
+
+      cy.request({
+        method: 'GET',
+        url: '/posts',
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+      }).then((response) => {
+        const post = response.body.data.find((_post) => _post.id === 1)
+
+        expect(post).to.be.undefined
       })
     })
   })
