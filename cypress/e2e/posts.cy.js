@@ -1,8 +1,7 @@
 describe('Post module', () => {
-  const postData = {
-    title: 'Title for testing post',
-    content: 'lorem ipsum testing post',
-  }
+  const dataCount = 15,
+    randomId = Cypress._.random(16, 50)
+  before('generate posts data', () => cy.generatePostsData(dataCount))
 
   describe('Create post', () => {
     before('login', () => {
@@ -30,23 +29,26 @@ describe('Post module', () => {
     })
 
     it('should return correct post', () => {
-      cy.request({
-        method: 'POST',
-        url: '/posts',
-        headers: {
-          authorization: `Bearer ${Cypress.env('token')}`,
-        },
-        body: postData,
-      }).then((response) => {
-        const {
-          success,
-          data: { title, content, comments },
-        } = response.body
-        expect(response.status).to.eq(201)
-        expect(success).to.be.true
-        expect(title).to.eq(postData.title)
-        expect(content).to.eq(postData.content)
-        expect(comments.length).to.eq(0)
+      cy.fixture('posts').as('getPostData')
+      cy.get('@getPostData').then((postData) => {
+        cy.request({
+          method: 'POST',
+          url: '/posts',
+          headers: {
+            authorization: `Bearer ${Cypress.env('token')}`,
+          },
+          body: postData[0],
+        }).then((response) => {
+          const {
+            success,
+            data: { title, content, comments },
+          } = response.body
+          expect(response.status).to.eq(201)
+          expect(success).to.be.true
+          expect(title).to.eq(postData[0].title)
+          expect(content).to.eq(postData[0].content)
+          expect(comments.length).to.eq(0)
+        })
       })
     })
   })
@@ -61,8 +63,6 @@ describe('Post module', () => {
     })
 
     it('should return correct count and data', () => {
-      const count = 15
-      cy.generatePostsData(count)
       cy.fixture('posts').as('getPostData')
       cy.get('@getPostData').then((postData) => cy.createPosts(postData))
 
@@ -77,7 +77,7 @@ describe('Post module', () => {
         const { success, data } = response.body
         expect(response.status).to.eq(200)
         expect(success).to.true
-        expect(data.length).to.eq(count)
+        expect(data.length).to.eq(dataCount)
 
         cy.get('@getPostData').then((postData) => {
           data.forEach((post, index) => {
@@ -114,10 +114,9 @@ describe('Post module', () => {
     })
 
     it('should return not found', () => {
-      const id = Cypress._.random(16, 50)
       cy.request({
         method: 'GET',
-        url: `/posts/${id}`,
+        url: `/posts/${randomId}`,
         headers: {
           authorization: `Bearer ${Cypress.env('token')}`,
         },
@@ -127,6 +126,95 @@ describe('Post module', () => {
         expect(response.status).to.eq(404)
         expect(success).to.be.false
         expect(data).to.be.null
+      })
+    })
+  })
+
+  describe('Update post', () => {
+    it('should return unauthorized', () => {
+      cy.checkUnauthorized('PATCH', '/posts/1')
+    })
+
+    it('should return not found', () => {
+      cy.request({
+        method: 'GET',
+        url: `/posts/${randomId}`,
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+        failOnStatusCode: false,
+      }).then((response) => {
+        const { success, data } = response.body
+        expect(response.status).to.eq(404)
+        expect(success).to.be.false
+        expect(data).to.be.null
+      })
+    })
+
+    it('should return error validation messages', () => {
+      cy.request({
+        method: 'PATCH',
+        url: '/posts/1',
+        body: { title: false, content: randomId },
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+        failOnStatusCode: false,
+      }).then((response) => {
+        cy.badRequest(response, [
+          'title must be a string',
+          'content must be a string',
+        ])
+      })
+    })
+
+    it('should return correct updated post', () => {
+      const newPost = {
+        title: 'updated title',
+        content: 'updated content',
+      }
+
+      cy.request({
+        method: 'PATCH',
+        url: '/posts/1',
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+        body: newPost,
+      }).then((response) => {
+        const {
+          success,
+          data: { title, content },
+        } = response.body
+        expect(response.status).to.eq(200)
+        expect(success).to.be.true
+        expect(title).to.eq(newPost.title)
+        expect(content).to.eq(newPost.content)
+      })
+
+      cy.request({
+        method: 'GET',
+        url: '/posts/1',
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+      }).then((response) => {
+        const { title, content } = response.body.data
+        expect(title).to.eq(newPost.title)
+        expect(content).to.eq(newPost.content)
+      })
+
+      cy.request({
+        method: 'GET',
+        url: '/posts',
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+      }).then((response) => {
+        const post = response.body.data.find((_post) => _post.id === 1)
+
+        expect(post.title).to.eq(newPost.title)
+        expect(post.content).to.eq(newPost.content)
       })
     })
   })
