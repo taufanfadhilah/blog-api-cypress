@@ -101,4 +101,41 @@ describe('Post module', () => {
       })
     })
   })
+
+  describe('Get by ID', () => {
+    it('should return correct data', () => {
+      cy.fixture('posts').then((data) => {
+        data.forEach((post, index) => {
+          if (index % 2)
+            cy.request({
+              method: 'GET',
+              url: `/posts/${index + 1}`,
+              headers: { authorization: `Bearer ${Cypress.env('token')}` },
+            }).then((response) => {
+              const { title, content } = response.body.data
+              expect(response.status).to.be.ok
+              expect(title).to.eq(post.title)
+              expect(content).to.eq(post.content)
+            })
+        })
+      })
+    })
+
+    it('should return not found', () => {
+      const id = Cypress._.random(16, 50)
+      cy.request({
+        method: 'GET',
+        url: `/posts/${id}`,
+        headers: {
+          authorization: `Bearer ${Cypress.env('token')}`,
+        },
+        failOnStatusCode: false,
+      }).then((response) => {
+        const { success, data } = response.body
+        expect(response.status).to.eq(404)
+        expect(success).to.be.false
+        expect(data).to.be.null
+      })
+    })
+  })
 })
