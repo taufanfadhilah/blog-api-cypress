@@ -114,3 +114,20 @@ Cypress.Commands.add('createPosts', (data = []) => {
     })
   })
 })
+
+Cypress.Commands.add('generateCommentsData', (count) => {
+  const { faker } = require('@faker-js/faker')
+
+  cy.generatePostsData(2)
+  cy.fixture('posts').then((posts) => cy.createPosts(posts))
+
+  cy.writeFile(
+    'cypress/fixtures/comments.json',
+    Cypress._.times(count, () => {
+      return {
+        post_id: Cypress._.random(1, 2),
+        content: faker.lorem.words(5),
+      }
+    }),
+  )
+})
