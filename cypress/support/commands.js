@@ -59,6 +59,17 @@ Cypress.Commands.add('unauthorized', (response) => {
   expect(response.body.message).to.eq('Unauthorized')
 })
 
+Cypress.Commands.add('checkUnauthorized', (method, url) => {
+  cy.request({
+    method,
+    url,
+    headers: {
+      authorization: null,
+    },
+    failOnStatusCode: false,
+  }).then((response) => cy.unauthorized(response))
+})
+
 Cypress.Commands.add('badRequest', (response, messages = []) => {
   expect(response.status).to.eq(400)
   expect(response.body.error).to.eq('Bad Request')

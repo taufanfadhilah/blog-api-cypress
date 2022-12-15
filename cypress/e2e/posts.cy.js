@@ -10,13 +10,7 @@ describe('Post module', () => {
     })
 
     it('should return unauthorized', () => {
-      cy.request({
-        method: 'POST',
-        url: '/posts',
-        failOnStatusCode: false,
-      }).then((response) => {
-        cy.unauthorized(response)
-      })
+      cy.checkUnauthorized('POST', '/posts')
     })
 
     it('should return error validation messages', () => {
@@ -63,13 +57,7 @@ describe('Post module', () => {
     })
 
     it('should return unauthorized', () => {
-      cy.request({
-        method: 'GET',
-        url: '/posts',
-        failOnStatusCode: false,
-      }).then((response) => {
-        cy.unauthorized(response)
-      })
+      cy.checkUnauthorized('GET', '/posts')
     })
 
     it('should return correct count and data', () => {
@@ -103,6 +91,10 @@ describe('Post module', () => {
   })
 
   describe('Get by ID', () => {
+    it('should return unauthorized', () => {
+      cy.checkUnauthorized('GET', '/posts/1')
+    })
+
     it('should return correct data', () => {
       cy.fixture('posts').then((data) => {
         data.forEach((post, index) => {

@@ -143,15 +143,16 @@ describe('Auth module', () => {
     })
 
     it('should return unauthorized when send no token', () => {
-      cy.request({
-        method: 'GET',
-        url: '/auth/me',
-        failOnStatusCode: false,
-      }).then((response) => {
-        cy.unauthorized(response)
-        // expect(response.status).to.eq(401)
-        // expect(response.body.message).to.eq('Unauthorized')
-      })
+      cy.checkUnauthorized('GET', '/auth/me')
+      // cy.request({
+      //   method: 'GET',
+      //   url: '/auth/me',
+      //   failOnStatusCode: false,
+      // }).then((response) => {
+      //   cy.unauthorized(response)
+      //   // expect(response.status).to.eq(401)
+      //   // expect(response.body.message).to.eq('Unauthorized')
+      // })
     })
 
     it('should return correct current data', () => {
