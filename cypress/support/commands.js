@@ -118,6 +118,16 @@ Cypress.Commands.add('createPosts', (data = []) => {
 Cypress.Commands.add('generateCommentsData', (count) => {
   const { faker } = require('@faker-js/faker')
 
+  cy.login()
+
+  cy.request({
+    method: 'DELETE',
+    url: '/comments/reset',
+    headers: {
+      authorization: `Bearer ${Cypress.env('token')}`,
+    },
+  })
+
   cy.generatePostsData(2)
   cy.fixture('posts').then((posts) => cy.createPosts(posts))
 
