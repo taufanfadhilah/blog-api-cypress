@@ -53,8 +53,7 @@ describe('Comment module', () => {
     })
 
     it('should be found in get post by id endpoint', () => {
-      cy.fixture('comments').as('getCommentData')
-      cy.get('@getCommentData').then((commentData) => {
+      cy.fixture('comments').then((commentData) => {
         cy.request({
           method: 'GET',
           url: `/posts/${commentData[0].post_id}`,
@@ -74,8 +73,6 @@ describe('Comment module', () => {
     })
 
     it('should be found in get all posts endpoint', () => {
-      cy.fixture('comments').as('getCommentData')
-
       cy.request({
         method: 'GET',
         url: `/posts`,
@@ -83,7 +80,7 @@ describe('Comment module', () => {
           authorization: `Bearer ${Cypress.env('token')}`,
         },
       }).then((response) => {
-        cy.get('@getCommentData').then((commentData) => {
+        cy.fixture('comments').then((commentData) => {
           const posts = response.body.data
           commentData.forEach((comment) => {
             const isFound = posts

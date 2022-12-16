@@ -1,11 +1,12 @@
 describe('Post module', () => {
   const dataCount = 15,
     randomId = Cypress._.random(16, 50)
-  before('generate posts data', () => cy.generatePostsData(dataCount))
 
   before('login', () => {
     cy.login()
   })
+
+  before('generate posts data', () => cy.generatePostsData(dataCount))
 
   describe('Create post', () => {
     it('should return unauthorized', () => {
@@ -29,8 +30,7 @@ describe('Post module', () => {
     })
 
     it('should return correct post', () => {
-      cy.fixture('posts').as('getPostData')
-      cy.get('@getPostData').then((postData) => {
+      cy.fixture('posts').then((postData) => {
         cy.request({
           method: 'POST',
           url: '/posts',
