@@ -252,7 +252,7 @@ describe('Post module', () => {
       })
     })
 
-    it('should not found the deleted post', () => {
+    it('should not be found the deleted post', () => {
       cy.request({
         method: 'GET',
         url: '/posts/1',
